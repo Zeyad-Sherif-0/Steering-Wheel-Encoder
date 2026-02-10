@@ -1,0 +1,7 @@
+../Encoder/Src/Encoder.c:22:6:Encoder_DelayUs	2
+../Encoder/Src/Encoder.c:32:10:Encoder_GetRawReadings	3
+../Encoder/Src/Encoder.c:62:10:Encoder_GrayToBinary	1
+../Encoder/Src/Encoder.c:74:10:Encoder_ConvertRAW	2
+../Encoder/Src/Encoder.c:93:7:Encoder_GetAngleInDegree	5
+../Encoder/Src/Encoder.c:117:6:Encoder_SendCAN	2
+../Encoder/Src/Encoder.c:148:6:Encoder_Task	1
