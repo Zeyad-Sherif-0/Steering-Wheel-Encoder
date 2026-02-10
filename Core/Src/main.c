@@ -99,7 +99,7 @@ int main(void)
   HAL_TIM_Base_Start(&htim2);
 
   // task creation
-  xTaskCreate(Encoder_Task, "Encoder main task", 128, NULL, 5, &Encoder_main_task);
+  xTaskCreate(Encoder_Task, "Encoder main task", 256, NULL, 5, &Encoder_main_task);
 
   // start the scheduler
   vTaskStartScheduler();
