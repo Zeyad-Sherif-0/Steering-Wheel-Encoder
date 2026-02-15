@@ -1,7 +1,8 @@
-../Encoder/Src/Encoder.c:22:6:Encoder_DelayUs	16	static
-../Encoder/Src/Encoder.c:32:10:Encoder_GetRawReadings	16	static
-../Encoder/Src/Encoder.c:62:10:Encoder_GrayToBinary	24	static
-../Encoder/Src/Encoder.c:74:10:Encoder_ConvertRAW	24	static
-../Encoder/Src/Encoder.c:93:7:Encoder_GetAngleInDegree	24	static
-../Encoder/Src/Encoder.c:117:6:Encoder_SendCAN	56	static
-../Encoder/Src/Encoder.c:148:6:Encoder_Task	24	static
+../Encoder/Src/Encoder.c:26:6:Encoder_DelayUs	16	static
+../Encoder/Src/Encoder.c:36:10:Encoder_GetRawBits	16	static
+../Encoder/Src/Encoder.c:45:10:Encoder_GetRawReadings	16	static
+../Encoder/Src/Encoder.c:75:10:Encoder_GrayToBinary	24	static
+../Encoder/Src/Encoder.c:87:10:Encoder_ConvertRAW	24	static
+../Encoder/Src/Encoder.c:111:7:Encoder_GetAngleInDegree	24	static
+../Encoder/Src/Encoder.c:137:6:Encoder_SendCAN	32	static
+../Encoder/Src/Encoder.c:166:6:Encoder_Task	16	static

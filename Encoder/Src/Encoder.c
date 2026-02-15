@@ -12,6 +12,8 @@
 /*============================= Private Variables =============================*/
 // External handle from can.c
 extern CAN_HandleTypeDef hcan;
+CAN_TxHeaderTypeDef txHeader = {0}; // CAN transmit header
+uint32_t txMailbox; // CAN transmit mailbox
 extern TIM_HandleTypeDef htim2;
 bool angle_is_valid = 1;
 /*=============================================================================*/
@@ -28,16 +30,25 @@ void Encoder_DelayUs(uint16_t us) {
     while (__HAL_TIM_GET_COUNTER(&htim2) < us);
 }
 
+// function to deal with pins conflict PB0-1 then PB3-10
+uint16_t Encoder_GetRawBits(void) {
+	uint16_t all_bits = (GPIOB->IDR) & ENCODER_MASK;
+	uint16_t first_2_bits = all_bits & ENCODER_2BITS;
+	uint16_t last_8_bits = (all_bits >> 1) & ENCODER_8BITS;
+	uint16_t raw_reading = (first_2_bits | last_8_bits) & ENCODER_RAW_MASK;
+	return raw_reading;
+}
+
 // function used to get raw readings in gray code
 uint16_t Encoder_GetRawReadings(void) {
 	// first reading
-	uint16_t read_raw_1 = (GPIOB->IDR) & ENCODER_MASK;
+	uint16_t read_raw_1 = Encoder_GetRawBits();
 
 	// wait for 50 us and take a new reading
 	Encoder_DelayUs(ENCODER_DELAY_PERIOD);
 
 	// second reading
-	uint16_t read_raw_2 = (GPIOB->IDR) & ENCODER_MASK;
+	uint16_t read_raw_2 = Encoder_GetRawBits();
 
 	// check stability
 	if(read_raw_1 == read_raw_2) {
@@ -48,14 +59,14 @@ uint16_t Encoder_GetRawReadings(void) {
 		Encoder_DelayUs(ENCODER_DELAY_PERIOD);
 
 		// third reading
-		uint16_t read_raw_3 = (GPIOB->IDR) & ENCODER_MASK;
+		uint16_t read_raw_3 = Encoder_GetRawBits();
 		if(read_raw_2 == read_raw_3) {
 				return (read_raw_2); // return correct reading
 		}
 		else {
 			return ENCODER_ERROR_READING; // return error reading
 		}
-	};
+	}
 }
 
 // function used to convert gray code to binary
@@ -67,7 +78,7 @@ uint16_t Encoder_GrayToBinary(uint16_t gray_reading) {
 	binary_reading ^= (binary_reading >> 4);
 	binary_reading ^= (binary_reading >> 8);
 
-	return binary_reading & ENCODER_MASK;
+	return binary_reading & ENCODER_RAW_MASK;
 }
 
 // function used to convert from raw reading to actual reading in binary and applying the offset
@@ -76,10 +87,10 @@ uint16_t Encoder_ConvertRAW(uint16_t raw_reading) {
 			return ENCODER_ERROR_READING;
 	}
 	// invert active low to correct gray code
-	uint16_t inverted_gray = (~raw_reading) & ENCODER_MASK;
+	uint16_t inverted_gray = (/*~*/raw_reading) & ENCODER_RAW_MASK;
 
 	// convert correction offset to binary
-	uint16_t binary_correction_offset = Encoder_GrayToBinary(ENCODER_CORRECTION_OFFSET);
+	uint16_t binary_correction_offset = Encoder_GrayToBinary((/*~*/ENCODER_CORRECTION_OFFSET) & ENCODER_RAW_MASK);
 
 	// convert gray code reading to binary
 	uint16_t raw_binary_reading = Encoder_GrayToBinary(inverted_gray);
@@ -89,20 +100,27 @@ uint16_t Encoder_ConvertRAW(uint16_t raw_reading) {
 	return binary_reading;
 }
 
+/*uint16_t Encoder_GearsCalculations(uint16_t binary_reading) {
+	 Grears Calculations to be added here,
+	 to convert encoder reading to actual steering wheel angle
+}*/
+
 // function used to convert the angle from binary to degree
-float Encoder_GetAngleInDegree(uint16_t binary_reading) {
+float Encoder_GetAngleInDegree(uint16_t gears_binary_reading) {
 	float angle_degree = 0.0f;
 	// Check for invalid reading
-	if(binary_reading == ENCODER_ERROR_READING) {
+	if(gears_binary_reading == ENCODER_ERROR_READING) {
 	   angle_is_valid = false;
 	   return 999.9f;  // Error value
 	}
 	// convert binary reading to degree
-	angle_degree = binary_reading * ENCODER_RAW_CONVERSION;
+	angle_degree = gears_binary_reading * ENCODER_RAW_CONVERSION;
+
 	// deal with right and left turn
 	if(angle_degree > 180.0f) {
 		angle_degree = angle_degree - 360.0f;
 	}
+
 	// check if the angle exceeded its maximum limit
 	if(angle_degree > ENCODER_MAX_STEERING_ANGLE || angle_degree < (ENCODER_MAX_STEERING_ANGLE * -1)) {
 		angle_is_valid = false;
@@ -116,8 +134,6 @@ float Encoder_GetAngleInDegree(uint16_t binary_reading) {
 // function used to transfer the readings through CAN
 void Encoder_SendCAN(float angle_degree) {
 	static uint8_t life_counter = 0; // detect if the MCU froze
-	CAN_TxHeaderTypeDef txHeader = {0}; // CAN transmit header
-	uint32_t txMailbox; // CAN transmit mailbox
 	uint8_t data[5]; // 4 Bytes Angle + 1 Byte Counter and flag
 
 	// Setup Header
@@ -158,6 +174,7 @@ void Encoder_Task(void * argument) {
 
 		// Transfer the readings through CAN
 		Encoder_SendCAN(angle_degree);
+		vTaskDelay(10);
 	}
 }
 

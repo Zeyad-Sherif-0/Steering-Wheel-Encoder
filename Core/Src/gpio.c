@@ -49,12 +49,12 @@ void MX_GPIO_Init(void)
   __HAL_RCC_GPIOB_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
 
-  /*Configure GPIO pins : ENC_0_Pin ENC_1_Pin ENC_2_Pin ENC_3_Pin
-                           ENC_4_Pin ENC_5_Pin ENC_6_Pin ENC_7_Pin
-                           ENC_8_Pin ENC_9_Pin */
-  GPIO_InitStruct.Pin = ENC_0_Pin|ENC_1_Pin|ENC_2_Pin|ENC_3_Pin
-                          |ENC_4_Pin|ENC_5_Pin|ENC_6_Pin|ENC_7_Pin
-                          |ENC_8_Pin|ENC_9_Pin;
+  /*Configure GPIO pins : ENC_0_Pin ENC_1_Pin ENC_9_Pin ENC_2_Pin
+                           ENC_3_Pin ENC_4_Pin ENC_5_Pin ENC_6_Pin
+                           ENC_7_Pin ENC_8_Pin */
+  GPIO_InitStruct.Pin = ENC_0_Pin|ENC_1_Pin|ENC_9_Pin|ENC_2_Pin
+                          |ENC_3_Pin|ENC_4_Pin|ENC_5_Pin|ENC_6_Pin
+                          |ENC_7_Pin|ENC_8_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
